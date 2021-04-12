@@ -1,0 +1,37 @@
+# Template file for 'ferdi'
+pkgname=ferdi
+version=5.5.0
+revision=1
+archs="x86_64"
+create_wrksrc=yes
+hostmakedepends="rpmextract"
+depends="alsa-lib c-ares ffmpeg gtk+3 http-parser libevent nghttp2 libsecret libxkbfile libxslt libXScrnSaver libXtst minizip nss re2 snappy"
+short_desc="Ferdi combines chat & messaging services into one application"
+maintainer="Marcus van Dam <mail@marcusvandam.nl>"
+license="Apache-2.0"
+homepage="https://getferdi.com"
+distfiles="https://github.com/getferdi/ferdi/releases/download/v${version}/ferdi-${version}.x86_64.rpm"
+checksum=9bf22a3bc6daa6d3995c27595ca664b0daa8ce1ab42bf779870735f3cb05ee6a
+
+do_patch() {
+	vsed -i "s|Exec=/opt/${pkgname^}/${pkgname}|Exec=/usr/bin/${pkgname}|" usr/share/applications/${pkgname}.desktop
+}
+
+do_install() {
+	vmkdir opt/${pkgname}
+	vcopy opt/${pkgname^}/* opt/${pkgname}
+
+	vmkdir usr/bin
+	ln -sf /opt/$pkgname/${pkgname} ${DESTDIR}/usr/bin
+
+	vmkdir usr/share/applications
+	vinstall usr/share/applications/${pkgname}.desktop 644 usr/share/applications
+
+	for _size in 16 24 32 48 64 96 128 256 512 1024; do
+		vmkdir usr/share/icons/hicolor/${_size}x${_size}/apps
+		vinstall usr/share/icons/hicolor/${_size}x${_size}/apps/${pkgname}.png 644 usr/share/icons/hicolor/${_size}x${_size}/apps/${pkgname}.png
+	done
+
+	vlicense opt/${pkgname^}/LICENSE.electron.txt
+	vlicense opt/${pkgname^}/LICENSES.chromium.html
+}
