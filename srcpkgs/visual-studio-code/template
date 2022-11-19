@@ -1,0 +1,60 @@
+# Template file for 'visual-studio-code'
+pkgname=visual-studio-code
+version=1.55.1
+revision=1
+archs="aarch64 armv7l i686 x86_64"
+hostmakedepends="tar"
+# lsof: needed for terminal splitting, see https://github.com/Microsoft/vscode/issues/62991
+# xdg-utils: needed for opening web links with xdg-open
+depends="libXtst libxkbfile gnupg gtk+3 libsecret nss libgcc libnotify libXScrnSaver glibc lsof shared-mime-info xdg-utils dejavu-fonts-ttf"
+short_desc="Microsoft Code for Linux"
+maintainer="Marcus van Dam <mail@marcusvandam.nl>"
+license="custom:commercial"
+repository=nonfree
+restricted=yes
+nostrip=yes
+homepage="https://code.visualstudio.com/"
+
+case "$XBPS_TARGET_MACHINE" in
+	aarch64)
+		_pkg=VSCode-linux-arm64
+		checksum=c0a8cd811fcfa5ec6b5f6123adf0a05a003696e70bc5a4ea62e133b1f485ec33
+		distfiles="https://update.code.visualstudio.com/${version}/linux-arm64/stable>code_arm64_${version}.tar.gz"
+		;;
+	armv7h)
+		_pkg=VSCode-linux-armhf
+		checksum=d46c15d16388eb43ad472b3e520b2048de174ded97a53f6763807e9fec3ca3bd
+		distfiles="https://update.code.visualstudio.com/${version}/linux-armhf/stable>code_armhf_${version}.tar.gz"
+		;;
+	i686)
+		_pkg=VSCode-linux-ia32
+		checksum=64360439cc2fa596838062f7e6f9757b79d4b775a564f18bad6cbad154bf850c
+
+		# i686 uses "latest" instead of a specific version as it's not always updated in a timely manner
+		distfiles="https://update.code.visualstudio.com/latest/linux-ia32/stable>code_ia32_${version}.tar.gz"
+		;;
+	x86_64)
+		_pkg=VSCode-linux-x64
+		checksum=aa8bfeda76b4e57e7c8df46c9f222271a18c8a594fcdcfac42c80c36ea09cba1
+		distfiles="https://update.code.visualstudio.com/${version}/linux-x64/stable>code_x64_${version}.tar.gz"
+		;;
+esac
+
+create_wrksrc=yes
+
+do_install() {
+	vmkdir opt/${pkgname}
+	vcopy ${_pkg}/* opt/${pkgname}
+
+	vmkdir usr/bin
+	ln -sf /opt/${pkgname}/bin/code ${DESTDIR}/usr/bin/
+
+	vmkdir usr/share/pixmaps
+	ln -sf /opt/${pkgname}/resources/app/resources/linux/code.png ${DESTDIR}/usr/share/pixmaps/${pkgname}.png
+
+	vmkdir usr/share/applications
+	vinstall ${FILESDIR}/${pkgname}.desktop 644 usr/share/applications
+	vinstall ${FILESDIR}/${pkgname}-url-handler.desktop 644 usr/share/applications
+
+	vlicense ${_pkg}/resources/app/LICENSE.rtf
+}
